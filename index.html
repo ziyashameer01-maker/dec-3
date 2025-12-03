@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pink Sweater Designer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  background: #ffe6f2;
+  font-family: sans-serif;
+  text-align: center;
+}
+/* ✅ SMALL IMAGE BUTTONS IN ONE LINE */
+.iconBtn {
+  width: 22px;        /* ✅ VERY SMALL */
+  height: 22px;
+  object-fit: contain;
+  cursor: pointer;
+  margin: 2px;
+  transition: transform 0.2s;
+}
+
+.iconBtn:hover {
+  transform: scale(1.15);
+}
+h1 {
+  color: hotpink;
+}
+
+#toolbar {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin: 10px;
+}
+
+button {
+  background: hotpink;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin: 5px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+input {
+  margin: 5px;
+}
+
+/* ✅ TRANSPARENT CANVAS BACKGROUND */
+#canvas {
+  width: 320px;
+  height: 420px;
+  background: transparent;   /* ✅ FIXED */
+  margin: auto;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ✅ YOUR REAL SWEATER IMAGE */
+#sweater {
+  width: 400px;
+  position: absolute;
+  top: -100px;
+  left: -40px;
+  pointer-events: none;
+}
+/* ✅ REAL STICKERS */
+.sticker {
+  position: absolute;
+  width: 35px;
+  cursor: grab;
+}
+
+.selected {
+  outline: 2px dashed hotpink;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🩷 Sweater Designer 🩷</h1>
+
+<div id="toolbar" style="display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 4px; justify-content: center;">
+<!-- ✅ ORIGINAL 3 -->
+<img src="images/pinkBow.png" class="iconBtn" onclick="addSticker('pinkBow.png')">
+<img src="images/glitter.png" class="iconBtn" onclick="addSticker('glitter.png')">
+<img src="images/cherryFlower.png" class="iconBtn" onclick="addSticker('cherryFlower.png')">
+
+<!-- ✅ YOUR NEW 5 -->
+<img src="images/Pinkflower.png" class="iconBtn" onclick="addSticker('Pinkflower.png')">
+<img src="images/Cherry.png" class="iconBtn" onclick="addSticker('Cherry.png')">
+<img src="images/Bouquet.png" class="iconBtn" onclick="addSticker('Bouquet.png')">
+<img src="images/Berry.png" class="iconBtn" onclick="addSticker('Berry.png')">
+<img src="images/Prettybow.png" class="iconBtn" onclick="addSticker('Prettybow.png')">
+<img src="images/Clover.png" class="iconBtn" onclick="addSticker('Clover.png')">
+<img src="images/Sunflower.png" class="iconBtn" onclick="addSticker('Sunflower.png')">
+<img src="images/Butterfly1.png" class="iconBtn" onclick="addSticker('Butterfly1.png')">
+<img src="images/Blueflower.png" class="iconBtn" onclick="addSticker('Blueflower.png')">
+📏 Resize:
+<input type="range" min="15" max="80" value="35" id="resizeSlider">
+🗑 <button onclick="deleteSticker()">Delete Sticker</button>
+<br>
+⬇️ <button onclick="downloadImage()">Download Image</button>
+</div>
+
+<div id="canvas">
+  <img id="sweater" src="images/sweater.png">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script>
+let selectedSticker = null;
+const slider = document.getElementById("resizeSlider");
+
+/* ✅ ADD REAL PNG STICKERS */
+function addSticker(file) {
+  const img = document.createElement("img");
+  img.src = file;
+  img.classList.add("sticker");
+  img.style.left = "140px";
+  img.style.top = "180px";
+  img.onclick = () => selectSticker(img);
+  document.getElementById("canvas").appendChild(img);
+  dragElement(img);
+  selectSticker(img);
+}
+
+/* ✅ SELECT STICKER */
+function selectSticker(el) {
+  document.querySelectorAll(".sticker").forEach(s => s.classList.remove("selected"));
+  selectedSticker = el;
+  el.classList.add("selected");
+  slider.value = el.offsetWidth;
+}
+
+/* ✅ RESIZE STICKER */
+slider.addEventListener("input", () => {
+  if (selectedSticker) {
+    selectedSticker.style.width = slider.value + "px";
+  }
+});
+
+/* ✅ DELETE STICKER */
+function deleteSticker() {
+  if (selectedSticker) {
+    selectedSticker.remove();
+    selectedSticker = null;
+  }
+}
+
+/* ✅ DRAG SYSTEM */
+function dragElement(el) {
+  let pos1=0, pos2=0, pos3=0, pos4=0;
+  el.onpointerdown = dragMouseDown;
+
+  function dragMouseDown(e) {
+    e.preventDefault();
+    selectSticker(el);
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onpointermove = elementDrag;
+    document.onpointerup = closeDragElement;
+  }
+
+  function elementDrag(e) {
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    el.style.top = (el.offsetTop - pos2) + "px";
+    el.style.left = (el.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    document.onpointerup = null;
+    document.onpointermove = null;
+  }
+}
+
+/* ✅ DOWNLOAD FINAL IMAGE (TRANSPARENT BACKGROUND WORKS!) */
+function downloadImage() {
+  html2canvas(document.getElementById("canvas"), {
+    backgroundColor: null   // ✅ ENSURES TRANSPARENCY
+  }).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "my_sweater_design.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+}
+</script>
+
+</body>
+</html>
